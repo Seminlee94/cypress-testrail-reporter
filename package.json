@@ -40,5 +40,5 @@
     "rimraf": "^2.7.1",
     "typescript": "^4.2.4"
   },
-  "homepage": "https://github.com/Seminlee94/cypress-testrail-reporter#readme",
+  "homepage": "https://github.com/Seminlee94/cypress-testrail-reporter#readme"
 }
