@@ -60,9 +60,11 @@ export class TestRail {
   }
 
   public createRun (name: string, description: string, suiteId: number) {
+    console.log("Creting Run...");
+    console.debug(name);
     if (this.options.includeAllInTestRun === false){
       this.includeAll = false;
-
+      
       new Promise<Number[]>((resolve, reject) => {
         this.getCases(suiteId, null, [], resolve, reject)}).then(response => {
           console.log('Creating run with following cases:');
@@ -70,12 +72,14 @@ export class TestRail {
           this.caseIds = response;
           this.addRun(name, description, suiteId);
         })
-    } else {
-      this.addRun(name, description, suiteId);
+      } else {
+        this.addRun(name, description, suiteId);
+      }
     }
-  }
-
+    
   public addRun(name: string, description: string, suiteId: number) {
+    console.log("Adding Run...");
+    console.debug(name);
     axios({
       method: 'post',
       url: `${this.base}/add_run/${this.options.projectId}`,

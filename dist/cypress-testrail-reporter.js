@@ -91,8 +91,8 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                     if (_this.reporterOptions.suiteId) {
                         TestRailLogger.log("Following suiteId has been set in cypress.json file: " + _this.suiteId);
                     }
-                    var executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
-                    var name_1 = (_this.reporterOptions.runName || 'Automated test run') + " " + executionDateTime;
+                    var executionDateTime = moment().format('MMM Do YYYY');
+                    const name = `${this.reporterOptions.runName || 'Automated regression test run for'} ${executionDateTime}`;
                     if (_this.reporterOptions.disableDescription) {
                         var description = '';
                     }

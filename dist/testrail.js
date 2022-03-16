@@ -68,6 +68,8 @@ var TestRail = /** @class */ (function () {
         });
     };
     TestRail.prototype.createRun = function (name, description, suiteId) {
+        console.log("Creting Run...");
+        console.debug(name);
         var _this = this;
         if (this.options.includeAllInTestRun === false) {
             this.includeAll = false;
@@ -85,6 +87,8 @@ var TestRail = /** @class */ (function () {
         }
     };
     TestRail.prototype.addRun = function (name, description, suiteId) {
+        console.log("Adding Run...");
+        console.debug(name);
         var _this = this;
         axios({
             method: 'post',
