@@ -89,7 +89,9 @@ export class CypressTestRailReporter extends reporters.Spec {
               TestRailLogger.log(`Following suiteId has been set in cypress.json file: ${this.suiteId}`);
             }
             const executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
+            TestRailLogger.log(`!!!!!!!!!!!!: ${this.reporterOptions.runName}`);
             const name = `${this.reporterOptions.runName || 'Automated test run'} ${executionDateTime}`;
+            TestRailLogger.log(`!!!!!!!!!!!!: ${name}`);
             if (this.reporterOptions.disableDescription) {
               var description = '';
             } else {
