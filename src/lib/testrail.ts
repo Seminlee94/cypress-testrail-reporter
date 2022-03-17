@@ -60,8 +60,7 @@ export class TestRail {
   }
 
   public createRun (name: string, description: string, suiteId: number) {
-    console.log("Creting Run...");
-    console.debug(name);
+    console.log("Creating Run...");
     if (this.options.includeAllInTestRun === false){
       this.includeAll = false;
       
@@ -79,7 +78,6 @@ export class TestRail {
     
   public addRun(name: string, description: string, suiteId: number) {
     console.log("Adding Run...");
-    console.debug(name);
     axios({
       method: 'post',
       url: `${this.base}/add_run/${this.options.projectId}`,

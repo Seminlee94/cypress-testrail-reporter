@@ -22,6 +22,7 @@ export class CypressTestRailReporter extends reporters.Spec {
     super(runner);
 
     this.reporterOptions = options.reporterOptions;
+    console.log(this.reporterOptions)
 
     if (process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME) {
       this.reporterOptions.username = process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME;
@@ -87,8 +88,8 @@ export class CypressTestRailReporter extends reporters.Spec {
             if (this.reporterOptions.suiteId) {
               TestRailLogger.log(`Following suiteId has been set in cypress.json file: ${this.suiteId}`);
             }
-            const executionDateTime = moment().format('MMM Do YYYY');
-            const name = `${this.reporterOptions.runName || 'Automated regression test run for'} ${executionDateTime}`;
+            const executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
+            const name = `${this.reporterOptions.runName || 'Automated test run'} ${executionDateTime}`;
             if (this.reporterOptions.disableDescription) {
               var description = '';
             } else {
