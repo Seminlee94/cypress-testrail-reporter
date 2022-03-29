@@ -70,25 +70,37 @@ var TestRail = /** @class */ (function () {
     TestRail.prototype.createRun = function (name, description, suiteId) {
         console.log("Creating Run...");
         var _this = this;
-        if (this.options.includeAllInTestRun === false) {
-            this.includeAll = false;
-            new Promise(function (resolve, reject) {
-                _this.getCases(suiteId, null, [], resolve, reject);
-            }).then(function (response) {
-                console.log('Creating run with following cases:');
-                console.debug(response);
-                _this.caseIds = response;
-                _this.addRun(name, description, suiteId);
-            });
-        }
-        else {
-            this.addRun(name, description, suiteId);
-        }
+        new Promise(function (resolve, reject) {
+            _this.getCases(suiteId, null, [], resolve, reject);
+        }).then(function (response) {
+            console.log('Creating run with following cases:');
+            console.debug("response2", response);
+            _this.caseIds = response;
+            _this.addRun(name, description, suiteId);
+        });
+        
+        // if (this.options.includeAllInTestRun === false) {
+        //     this.includeAll = false;
+        //     new Promise(function (resolve, reject) {
+        //         _this.getCases(suiteId, null, [], resolve, reject);
+        //     }).then(function (response) {
+        //         console.log('Creating run with following cases:');
+        //         console.debug(response);
+        //         _this.caseIds = response;
+        //         _this.addRun(name, description, suiteId);
+        //     });
+        // }
+        // else {
+        //     _this.addRun(name, description, suiteId).then(() => {
+        //         _this.getRuns();
+        //     })
+        // }
     };
     TestRail.prototype.addRun = function (name, description, suiteId) {
         console.log("Adding Run...");
+        console.log("case1", this.caseIds);
         var _this = this;
-        axios({
+        return axios({
             method: 'post',
             url: this.base + "/add_run/" + this.options.projectId,
             headers: { 'Content-Type': 'application/json' },
@@ -105,11 +117,29 @@ var TestRail = /** @class */ (function () {
             }),
         })
             .then(function (response) {
+            console.log("!!!!!response runId", response);
             _this.runId = response.data.id;
             // cache the TestRail Run ID
             TestRailCache.store('runId', _this.runId);
         })
             .catch(function (error) { return console.error(error); });
+    };
+    TestRail.prototype.getRuns = function () {
+        console.log("getting runs...")
+        return axios({
+            method:'get',
+            url: this.base + "/get_runs/" + this.options.projectId,
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-api-ident': 'beta'
+            },
+            auth: {
+                username: this.options.username,
+                password: this.options.password
+            }
+          })
+            .then((res) => console.log("DDD1", res.data))
+            .catch(function (error) { return console.error("ERROR@@", error); });
     };
     TestRail.prototype.deleteRun = function () {
         this.runId = TestRailCache.retrieve('runId');

@@ -34,7 +34,6 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         _this.suiteId = [];
         _this.serverTestCaseIds = [];
         _this.reporterOptions = options.reporterOptions;
-        console.log(_this.reporterOptions)
         if (process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME) {
             _this.reporterOptions.username = process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME;
         }
@@ -92,10 +91,8 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                     if (_this.reporterOptions.suiteId) {
                         TestRailLogger.log("Following suiteId has been set in cypress.json file: " + _this.suiteId);
                     }
-                    var executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
-                    TestRailLogger.log("(`!!!!!!!!!!!!:: " + _this.reporterOptions.runName)
-                    var name_1 = (_this.reporterOptions.runName || 'Automated test run') + " " + executionDateTime;
-                    TestRailLogger.log(`!!!!!!!!!!!!: ${name_1}`);
+                    var executionDateTime = moment().format('LLLL');
+                    var name_1 = (_this.reporterOptions.runName || 'Automated regression test run for') + " " + executionDateTime;
                     if (_this.reporterOptions.disableDescription) {
                         var description = '';
                     }
@@ -143,7 +140,8 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                     case_id: caseId,
                     status_id: status,
                     comment: "Execution time: " + test.duration + "ms, case_id: " + caseId,
-                }).then(function (response) {
+                })
+                .then(function (response) {
                     if (_this.reporterOptions.allowFailedScreenshotUpload === true && (status === testrail_interface_1.Status.Failed || status === testrail_interface_1.Status.Retest)) {
                         _this.testRailApi.uploadScreenshots(caseId, response[0].id);
                     }

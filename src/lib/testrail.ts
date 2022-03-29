@@ -4,6 +4,7 @@ const path = require('path');
 const FormData = require('form-data');
 const TestRailLogger = require('./testrail.logger');
 const TestRailCache = require('./testrail.cache');
+import { RSA_NO_PADDING } from 'constants';
 import { TestRailOptions, TestRailResult } from './testrail.interface';
 
 export class TestRail {
@@ -61,24 +62,36 @@ export class TestRail {
 
   public createRun (name: string, description: string, suiteId: number) {
     console.log("Creating Run...");
-    if (this.options.includeAllInTestRun === false){
-      this.includeAll = false;
-      
-      new Promise<Number[]>((resolve, reject) => {
-        this.getCases(suiteId, null, [], resolve, reject)}).then(response => {
-          console.log('Creating run with following cases:');
-          console.debug(response);
-          this.caseIds = response;
-          this.addRun(name, description, suiteId);
-        })
-      } else {
+    new Promise<Number[]>((resolve, reject) => {
+      this.getCases(suiteId, null, [], resolve, reject)}).then(response => {
+        console.log('Creating run with following cases:');
+        console.debug("response2", response);
+        this.caseIds = response;
         this.addRun(name, description, suiteId);
-      }
+      })
+
+    // if (this.options.includeAllInTestRun === false){
+    //   this.includeAll = false;
+      
+    //   new Promise<Number[]>((resolve, reject) => {
+    //     this.getCases(suiteId, null, [], resolve, reject)}).then(response => {
+    //       console.log('Creating run with following cases:');
+    //       console.debug(response);
+    //       this.caseIds = response;
+    //       this.addRun(name, description, suiteId);
+    //     })
+    //   } 
+    //   else {
+    //     this.addRun(name, description, suiteId).then(() => {
+    //       this.getRuns();
+    //     })
+    //   }
     }
     
   public addRun(name: string, description: string, suiteId: number) {
     console.log("Adding Run...");
-    axios({
+    console.log("case1", this.caseIds);
+    return axios({
       method: 'post',
       url: `${this.base}/add_run/${this.options.projectId}`,
       headers: { 'Content-Type': 'application/json' },
@@ -95,11 +108,32 @@ export class TestRail {
       }),
     })
     .then(response => {
+        console.log("!!!!!response runId", response);
         this.runId = response.data.id;
         // cache the TestRail Run ID
         TestRailCache.store('runId', this.runId);
     })
-    .catch(error => console.error(error));
+    .catch(error => {console.error(error)});
+  }
+
+  public getRuns() {
+    // see if any autoamtion runs are available
+    // if yes set it ot TestRailCache.store('runId', this.runId);
+    console.log("getting runs...")
+    return axios({
+      method:'get',
+      url: `${this.base}/get_runs/${this.options.projectId}`,
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-ident': 'beta'
+      },
+      auth: {
+          username: this.options.username,
+          password: this.options.password
+      }
+    })
+    .then((res) => console.log("DDD1", res.data))
+    .catch((error) => {console.log("ERROR@@", error)});
   }
 
   public deleteRun() {

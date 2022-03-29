@@ -22,7 +22,6 @@ export class CypressTestRailReporter extends reporters.Spec {
     super(runner);
 
     this.reporterOptions = options.reporterOptions;
-    console.log(this.reporterOptions)
 
     if (process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME) {
       this.reporterOptions.username = process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME;
@@ -88,10 +87,8 @@ export class CypressTestRailReporter extends reporters.Spec {
             if (this.reporterOptions.suiteId) {
               TestRailLogger.log(`Following suiteId has been set in cypress.json file: ${this.suiteId}`);
             }
-            const executionDateTime = moment().format('MMM Do YYYY, HH:mm (Z)');
-            TestRailLogger.log(`!!!!!!!!!!!!: ${this.reporterOptions.runName}`);
-            const name = `${this.reporterOptions.runName || 'Automated test run'} ${executionDateTime}`;
-            TestRailLogger.log(`!!!!!!!!!!!!: ${name}`);
+            const executionDateTime = moment().format('LLLL');
+            const name = `${this.reporterOptions.runName || 'Automated regression test run for'} ${executionDateTime}`;
             if (this.reporterOptions.disableDescription) {
               var description = '';
             } else {
@@ -138,7 +135,8 @@ export class CypressTestRailReporter extends reporters.Spec {
           case_id: caseId,
           status_id: status,
           comment: `Execution time: ${test.duration}ms, case_id: ${caseId}`,
-        }).then((response) => {
+        })
+        .then((response) => {
           if (this.reporterOptions.allowFailedScreenshotUpload === true && (status === Status.Failed || status === Status.Retest)) {
             this.testRailApi.uploadScreenshots(caseId, response[0].id);
          }
