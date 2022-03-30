@@ -1,5 +1,4 @@
 import { reporters } from 'mocha';
-import * as moment from 'moment';
 import { TestRail } from './testrail';
 import { titleToCaseIds } from './shared';
 import { Status, TestRailResult } from './testrail.interface';
@@ -87,8 +86,8 @@ export class CypressTestRailReporter extends reporters.Spec {
             if (this.reporterOptions.suiteId) {
               TestRailLogger.log(`Following suiteId has been set in cypress.json file: ${this.suiteId}`);
             }
-            const executionDateTime = moment().format('LLLL');
-            const name = `${this.reporterOptions.runName || 'Automated regression test run for'} ${executionDateTime}`;
+            // const executionDateTime = moment().format('dddd, MMMM Do YYYY');
+            const name = `${this.reporterOptions.runName || 'Automated regression test run for'} ${this.testRailApi.executionDateTime}`;
             if (this.reporterOptions.disableDescription) {
               var description = '';
             } else {

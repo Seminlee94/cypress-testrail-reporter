@@ -18,6 +18,7 @@ var path = require('path');
 var FormData = require('form-data');
 var TestRailLogger = require('./testrail.logger');
 var TestRailCache = require('./testrail.cache');
+var moment = require("moment");
 var TestRail = /** @class */ (function () {
     function TestRail(options) {
         this.options = options;
@@ -25,6 +26,9 @@ var TestRail = /** @class */ (function () {
         this.caseIds = [];
         this.base = options.host + "/index.php?/api/v2";
         this.runId;
+        this.runExists = false;
+        this.executionDateTime = moment().format('dddd, MMMM Do YYYY');
+
     }
     TestRail.prototype.getCases = function (suiteId, nextURL, cases, resolve, reject) {
         var _this = this;
@@ -68,16 +72,22 @@ var TestRail = /** @class */ (function () {
         });
     };
     TestRail.prototype.createRun = function (name, description, suiteId) {
-        console.log("Creating Run...");
-        var _this = this;
-        new Promise(function (resolve, reject) {
-            _this.getCases(suiteId, null, [], resolve, reject);
-        }).then(function (response) {
-            console.log('Creating run with following cases:');
-            console.debug("response2", response);
-            _this.caseIds = response;
-            _this.addRun(name, description, suiteId);
-        });
+        if (!this.runExists) {
+            console.log("Creating Run...");
+            var _this = this;
+            new Promise(function (resolve, reject) {
+                _this.getCases(suiteId, null, [], resolve, reject);
+            }).then(function (response) {
+                console.debug('Creating run with following cases: ', response);
+                _this.caseIds = response;
+                _this.addRun(name, description, suiteId);
+            })
+            .then(() => {
+                _this.getRuns()
+            })
+        } else {
+            _this.updateRuns(_this.caseIds)
+        }
         
         // if (this.options.includeAllInTestRun === false) {
         //     this.includeAll = false;
@@ -98,7 +108,6 @@ var TestRail = /** @class */ (function () {
     };
     TestRail.prototype.addRun = function (name, description, suiteId) {
         console.log("Adding Run...");
-        console.log("case1", this.caseIds);
         var _this = this;
         return axios({
             method: 'post',
@@ -117,7 +126,6 @@ var TestRail = /** @class */ (function () {
             }),
         })
             .then(function (response) {
-            console.log("!!!!!response runId", response);
             _this.runId = response.data.id;
             // cache the TestRail Run ID
             TestRailCache.store('runId', _this.runId);
@@ -138,9 +146,36 @@ var TestRail = /** @class */ (function () {
                 password: this.options.password
             }
           })
-            .then((res) => console.log("DDD1", res.data))
+            .then((res) => {
+                if (res.data.runs.some(run => run["name"].includes(this.executionDateTime))) {
+                    this.runExists = true;
+                }
+            })
             .catch(function (error) { return console.error("ERROR@@", error); });
     };
+    TestRail.prototype.updateRuns = function (caseIds) {
+        console.log("updating runs...")
+        this.runId = TestRailCache.retrieve('runId');
+        return axios({
+            method:'post',
+            url: this.base + "/update_run/" + this.runId,
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-api-ident': 'beta'
+            },
+            auth: {
+                username: this.options.username,
+                password: this.options.password
+            },
+            data: JSON.stringify({ 
+                "case_ids": caseIds
+             })
+          })
+            .then((res) => {
+                console.log("update res", res)
+            })
+            .catch(function (error) { return console.error("ERROR@@", error); });
+    }
     TestRail.prototype.deleteRun = function () {
         this.runId = TestRailCache.retrieve('runId');
         axios({

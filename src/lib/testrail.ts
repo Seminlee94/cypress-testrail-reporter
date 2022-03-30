@@ -6,6 +6,8 @@ const TestRailLogger = require('./testrail.logger');
 const TestRailCache = require('./testrail.cache');
 import { RSA_NO_PADDING } from 'constants';
 import { TestRailOptions, TestRailResult } from './testrail.interface';
+import { CypressTestRailReporter } from './cypress-testrail-reporter'
+import moment = require('moment');
 
 export class TestRail {
   private base: String;
@@ -13,6 +15,9 @@ export class TestRail {
   private includeAll: Boolean = true;
   private caseIds: Number[] = [];
   private retries: number;
+  private runExists: Boolean = false;
+  public executionDateTime = moment().format('dddd, MMMM Do YYYY');
+
 
   constructor(private options: TestRailOptions) {
     this.base = `${options.host}/index.php?/api/v2`;
@@ -61,15 +66,21 @@ export class TestRail {
   }
 
   public createRun (name: string, description: string, suiteId: number) {
-    console.log("Creating Run...");
-    new Promise<Number[]>((resolve, reject) => {
-      this.getCases(suiteId, null, [], resolve, reject)}).then(response => {
-        console.log('Creating run with following cases:');
-        console.debug("response2", response);
-        this.caseIds = response;
-        this.addRun(name, description, suiteId);
-      })
-
+    if (!this.runExists) {
+      console.log("Creating Run...");
+      new Promise<Number[]>((resolve, reject) => {
+        this.getCases(suiteId, null, [], resolve, reject)}).then(response => {
+          console.log('Creating run with following cases: ', response);
+          this.caseIds = response;
+          this.addRun(name, description, suiteId);
+        })
+        .then(() => {
+          this.getRuns()
+        })
+    } else {
+      this.updateRuns(this.caseIds)
+    }
+    
     // if (this.options.includeAllInTestRun === false){
     //   this.includeAll = false;
       
@@ -90,7 +101,6 @@ export class TestRail {
     
   public addRun(name: string, description: string, suiteId: number) {
     console.log("Adding Run...");
-    console.log("case1", this.caseIds);
     return axios({
       method: 'post',
       url: `${this.base}/add_run/${this.options.projectId}`,
@@ -108,7 +118,6 @@ export class TestRail {
       }),
     })
     .then(response => {
-        console.log("!!!!!response runId", response);
         this.runId = response.data.id;
         // cache the TestRail Run ID
         TestRailCache.store('runId', this.runId);
@@ -132,7 +141,35 @@ export class TestRail {
           password: this.options.password
       }
     })
-    .then((res) => console.log("DDD1", res.data))
+    .then((res) => {
+      if (res.data.runs.some(run => run["name"].includes(this.executionDateTime))) {
+        this.runExists = true;
+      }
+    })
+    .catch((error) => {console.log("ERROR@@", error)});
+  }
+
+  public updateRuns(caseIds) {
+    console.log("updating runs...")
+    this.runId = TestRailCache.retrieve('runId');
+    return axios({
+      method:'post',
+      url: `${this.base}/update_run/${this.runId}`,
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-ident': 'beta'
+      },
+      auth: {
+          username: this.options.username,
+          password: this.options.password
+      },
+      data: JSON.stringify({ 
+        "case_ids": caseIds
+       })
+    })
+    .then((res) => {
+      console.log("update res", res)
+    })
     .catch((error) => {console.log("ERROR@@", error)});
   }
 

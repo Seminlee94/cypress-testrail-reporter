@@ -17,7 +17,6 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CypressTestRailReporter = void 0;
 var mocha_1 = require("mocha");
-var moment = require("moment");
 var testrail_1 = require("./testrail");
 var shared_1 = require("./shared");
 var testrail_interface_1 = require("./testrail.interface");
@@ -26,6 +25,7 @@ var TestRailCache = require('./testrail.cache');
 var TestRailLogger = require('./testrail.logger');
 var chalk = require('chalk');
 var runCounter = 1;
+
 var CypressTestRailReporter = /** @class */ (function (_super) {
     __extends(CypressTestRailReporter, _super);
     function CypressTestRailReporter(runner, options) {
@@ -91,8 +91,8 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                     if (_this.reporterOptions.suiteId) {
                         TestRailLogger.log("Following suiteId has been set in cypress.json file: " + _this.suiteId);
                     }
-                    var executionDateTime = moment().format('LLLL');
-                    var name_1 = (_this.reporterOptions.runName || 'Automated regression test run for') + " " + executionDateTime;
+                    // var executionDateTime = moment().format('dddd, MMMM Do YYYY');
+                    var name_1 = (_this.reporterOptions.runName || 'Automated regression test run for') + " " + _this.testRailApi.executionDateTime;
                     if (_this.reporterOptions.disableDescription) {
                         var description = '';
                     }
