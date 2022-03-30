@@ -66,6 +66,7 @@ export class TestRail {
   }
 
   public createRun (name: string, description: string, suiteId: number) {
+    console.log("runExists", this.runExists);
     if (!this.runExists) {
       console.log("Creating Run...");
       new Promise<Number[]>((resolve, reject) => {
@@ -73,9 +74,6 @@ export class TestRail {
           console.log('Creating run with following cases: ', response);
           this.caseIds = response;
           this.addRun(name, description, suiteId);
-        })
-        .then(() => {
-          this.getRuns()
         })
     } else {
       this.updateRuns(this.caseIds)
@@ -122,13 +120,14 @@ export class TestRail {
         // cache the TestRail Run ID
         TestRailCache.store('runId', this.runId);
     })
+    .then(() => {
+      this.getRuns();
+    })
     .catch(error => {console.error(error)});
   }
 
   public getRuns() {
-    // see if any autoamtion runs are available
-    // if yes set it ot TestRailCache.store('runId', this.runId);
-    console.log("getting runs...")
+    console.log("Getting runs...")
     return axios({
       method:'get',
       url: `${this.base}/get_runs/${this.options.projectId}`,

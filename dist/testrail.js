@@ -72,6 +72,7 @@ var TestRail = /** @class */ (function () {
         });
     };
     TestRail.prototype.createRun = function (name, description, suiteId) {
+        console.log("runExists", this.runExists);
         if (!this.runExists) {
             console.log("Creating Run...");
             var _this = this;
@@ -81,9 +82,6 @@ var TestRail = /** @class */ (function () {
                 console.debug('Creating run with following cases: ', response);
                 _this.caseIds = response;
                 _this.addRun(name, description, suiteId);
-            })
-            .then(() => {
-                _this.getRuns()
             })
         } else {
             _this.updateRuns(_this.caseIds)
@@ -130,10 +128,13 @@ var TestRail = /** @class */ (function () {
             // cache the TestRail Run ID
             TestRailCache.store('runId', _this.runId);
         })
+            .then(function () {
+                _this.getRuns();
+        })
             .catch(function (error) { return console.error(error); });
     };
     TestRail.prototype.getRuns = function () {
-        console.log("getting runs...")
+        console.log("Getting runs...")
         return axios({
             method:'get',
             url: this.base + "/get_runs/" + this.options.projectId,
