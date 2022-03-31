@@ -113,8 +113,16 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                         _this.testRailApi.createRun(name_1, description, _this.suiteId);
                     }
                     else {
+                        for (var _runObj of _this.testRailApi.runIds) { 
+                            if (_runObj["name"] == name_1) { 
+                                console.log("runId@", _runObj["id"])
+
+                                _this.runId = _runObj["id"]
+                                break;
+                            }
+                        }
                         // use the cached TestRail Run ID
-                        _this.runId = TestRailCache.retrieve('runId');
+                        // _this.runId = TestRailCache.retrieve('runId');
                         TestRailLogger.log("Using existing TestRail Run with ID: '" + _this.runId + "'");
                     }
                 });

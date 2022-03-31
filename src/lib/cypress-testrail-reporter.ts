@@ -104,10 +104,18 @@ export class CypressTestRailReporter extends reporters.Spec {
               }
               TestRailLogger.log(`Creating TestRail Run with name: ${name}`);
               this.testRailApi.createRun(name, description, this.suiteId);
-          } else {
+          } 
+          else {
+            for (var runObj of this.testRailApi.runIds) {
+              if (runObj["name"] == name) {
+                console.log("runId@", runObj["id"])
+                this.runId = runObj["id"]
+                break;
+              }
+            }
               // use the cached TestRail Run ID
-              this.runId = TestRailCache.retrieve('runId');
-              TestRailLogger.log(`Using existing TestRail Run with ID: '${this.runId}'`);
+              // this.runId = TestRailCache.retrieve('runId');
+            TestRailLogger.log(`Using existing TestRail Run with ID: '${this.runId}'`);
           }
         })
       });
