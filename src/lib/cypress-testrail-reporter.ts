@@ -6,6 +6,7 @@ import { TestRailValidation } from './testrail.validation';
 const TestRailCache = require('./testrail.cache');
 const TestRailLogger = require('./testrail.logger');
 import chalk = require('chalk');
+import moment = require('moment');
 var runCounter = 1;
 
 export class CypressTestRailReporter extends reporters.Spec {
@@ -80,30 +81,35 @@ export class CypressTestRailReporter extends reporters.Spec {
         * unless a cached value already exists for an existing TestRail Run in
         * which case that will be used and no new one created.
         */
-        if (!TestRailCache.retrieve('runId')) {
-          TestRailLogger.warn('Starting with following options: ')
-          console.debug(this.reporterOptions)
-            if (this.reporterOptions.suiteId) {
-              TestRailLogger.log(`Following suiteId has been set in cypress.json file: ${this.suiteId}`);
-            }
-            // const executionDateTime = moment().format('dddd, MMMM Do YYYY');
-            const name = `${this.reporterOptions.runName || 'Automated regression test run for'} ${this.testRailApi.executionDateTime}`;
-            if (this.reporterOptions.disableDescription) {
-              var description = '';
-            } else {
-              if (process.env.CYPRESS_CI_JOB_URL) {
-                var description = process.env.CYPRESS_CI_JOB_URL;
-              } else {
-                var description = 'For the Cypress run visit https://dashboard.cypress.io/#/projects/runs';
+        this.testRailApi.getRuns().then((res) => {
+          const executionDateTime = moment().format('dddd, MMMM Do YYYY');
+          const name = `${this.reporterOptions.runName || 'Automated regression test run'} ${executionDateTime}`;
+          // if (!TestRailCache.retrieve('runId')) {
+          if (this.testRailApi.runIds.some(run => run["name"] == name) == false) {
+            console.log("run name", name);
+            console.log("@@", this.testRailApi.runIds.some(run => run["name"] == name))
+            TestRailLogger.warn('Starting with following options: ')
+            console.debug(this.reporterOptions)
+              if (this.reporterOptions.suiteId) {
+                TestRailLogger.log(`Following suiteId has been set in cypress.json file: ${this.suiteId}`);
               }
-            }
-            TestRailLogger.log(`Creating TestRail Run with name: ${name}`);
-            this.testRailApi.createRun(name, description, this.suiteId);
-        } else {
-            // use the cached TestRail Run ID
-            this.runId = TestRailCache.retrieve('runId');
-            TestRailLogger.log(`Using existing TestRail Run with ID: '${this.runId}'`);
-        }
+              if (this.reporterOptions.disableDescription) {
+                var description = '';
+              } else {
+                if (process.env.CYPRESS_CI_JOB_URL) {
+                  var description = process.env.CYPRESS_CI_JOB_URL;
+                } else {
+                  var description = 'For the Cypress run visit https://dashboard.cypress.io/#/projects/runs';
+                }
+              }
+              TestRailLogger.log(`Creating TestRail Run with name: ${name}`);
+              this.testRailApi.createRun(name, description, this.suiteId);
+          } else {
+              // use the cached TestRail Run ID
+              this.runId = TestRailCache.retrieve('runId');
+              TestRailLogger.log(`Using existing TestRail Run with ID: '${this.runId}'`);
+          }
+        })
       });
 
       runner.on('pass', test => {

@@ -6,8 +6,6 @@ const TestRailLogger = require('./testrail.logger');
 const TestRailCache = require('./testrail.cache');
 import { RSA_NO_PADDING } from 'constants';
 import { TestRailOptions, TestRailResult } from './testrail.interface';
-import { CypressTestRailReporter } from './cypress-testrail-reporter'
-import moment = require('moment');
 
 export class TestRail {
   private base: String;
@@ -15,9 +13,7 @@ export class TestRail {
   private includeAll: Boolean = true;
   private caseIds: Number[] = [];
   private retries: number;
-  private runExists: Boolean = false;
-  public executionDateTime = moment().format('dddd, MMMM Do YYYY');
-
+  public runIds: Number[] = [];
 
   constructor(private options: TestRailOptions) {
     this.base = `${options.host}/index.php?/api/v2`;
@@ -65,36 +61,42 @@ export class TestRail {
       })
   }
 
+  public getRuns() {
+    console.log("Getting runs...")
+    return axios({
+      method:'get',
+      url: `${this.base}/get_runs/${this.options.projectId}`,
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-ident': 'beta'
+      },
+      auth: {
+          username: this.options.username,
+          password: this.options.password
+      }
+    })
+    .then((response) => {
+      this.runIds = response.data.runs;
+      return this.runIds
+    })
+    .catch((error) => { return console.error("ERROR@@", error)});
+  }
+
   public createRun (name: string, description: string, suiteId: number) {
-    console.log("runExists", this.runExists);
-    if (!this.runExists) {
-      console.log("Creating Run...");
+    if (this.options.includeAllInTestRun === false){
+      this.includeAll = false;
+      
       new Promise<Number[]>((resolve, reject) => {
         this.getCases(suiteId, null, [], resolve, reject)}).then(response => {
-          console.log('Creating run with following cases: ', response);
+          console.log('Creating run with following cases:');
+          console.debug(response);
           this.caseIds = response;
           this.addRun(name, description, suiteId);
         })
-    } else {
-      this.updateRuns(this.caseIds)
-    }
-    
-    // if (this.options.includeAllInTestRun === false){
-    //   this.includeAll = false;
-      
-    //   new Promise<Number[]>((resolve, reject) => {
-    //     this.getCases(suiteId, null, [], resolve, reject)}).then(response => {
-    //       console.log('Creating run with following cases:');
-    //       console.debug(response);
-    //       this.caseIds = response;
-    //       this.addRun(name, description, suiteId);
-    //     })
-    //   } 
-    //   else {
-    //     this.addRun(name, description, suiteId).then(() => {
-    //       this.getRuns();
-    //     })
-    //   }
+      } 
+      else {
+        this.addRun(name, description, suiteId)
+      }
     }
     
   public addRun(name: string, description: string, suiteId: number) {
@@ -120,56 +122,7 @@ export class TestRail {
         // cache the TestRail Run ID
         TestRailCache.store('runId', this.runId);
     })
-    .then(() => {
-      this.getRuns();
-    })
     .catch(error => {console.error(error)});
-  }
-
-  public getRuns() {
-    console.log("Getting runs...")
-    return axios({
-      method:'get',
-      url: `${this.base}/get_runs/${this.options.projectId}`,
-      headers: { 
-        'Content-Type': 'application/json',
-        'x-api-ident': 'beta'
-      },
-      auth: {
-          username: this.options.username,
-          password: this.options.password
-      }
-    })
-    .then((res) => {
-      if (res.data.runs.some(run => run["name"].includes(this.executionDateTime))) {
-        this.runExists = true;
-      }
-    })
-    .catch((error) => {console.log("ERROR@@", error)});
-  }
-
-  public updateRuns(caseIds) {
-    console.log("updating runs...")
-    this.runId = TestRailCache.retrieve('runId');
-    return axios({
-      method:'post',
-      url: `${this.base}/update_run/${this.runId}`,
-      headers: { 
-        'Content-Type': 'application/json',
-        'x-api-ident': 'beta'
-      },
-      auth: {
-          username: this.options.username,
-          password: this.options.password
-      },
-      data: JSON.stringify({ 
-        "case_ids": caseIds
-       })
-    })
-    .then((res) => {
-      console.log("update res", res)
-    })
-    .catch((error) => {console.log("ERROR@@", error)});
   }
 
   public deleteRun() {

@@ -18,17 +18,14 @@ var path = require('path');
 var FormData = require('form-data');
 var TestRailLogger = require('./testrail.logger');
 var TestRailCache = require('./testrail.cache');
-var moment = require("moment");
 var TestRail = /** @class */ (function () {
     function TestRail(options) {
         this.options = options;
         this.includeAll = true;
         this.caseIds = [];
+        this.runIds = [];
         this.base = options.host + "/index.php?/api/v2";
         this.runId;
-        this.runExists = false;
-        this.executionDateTime = moment().format('dddd, MMMM Do YYYY');
-
     }
     TestRail.prototype.getCases = function (suiteId, nextURL, cases, resolve, reject) {
         var _this = this;
@@ -71,38 +68,42 @@ var TestRail = /** @class */ (function () {
             reject([]);
         });
     };
+    TestRail.prototype.getRuns = function () {
+        console.log("Getting runs...")
+        var _this = this;
+        return axios({
+            method:'get',
+            url: this.base + "/get_runs/" + this.options.projectId,
+            headers: { 
+                'Content-Type': 'application/json',
+                'x-api-ident': 'beta'
+            },
+            auth: {
+                username: this.options.username,
+                password: this.options.password
+            }
+          })
+            .then(function (response) {
+                _this.runIds = response.data.runs;
+                return _this.runIds;
+            })
+            .catch(function (error) { return console.error("ERROR@@", error); });
+    };
     TestRail.prototype.createRun = function (name, description, suiteId) {
-        console.log("runExists", this.runExists);
-        if (!this.runExists) {
-            console.log("Creating Run...");
-            var _this = this;
+        if (this.options.includeAllInTestRun === false) {
+            this.includeAll = false;
             new Promise(function (resolve, reject) {
                 _this.getCases(suiteId, null, [], resolve, reject);
             }).then(function (response) {
-                console.debug('Creating run with following cases: ', response);
+                console.log('Creating run with following cases:');
+                console.debug(response);
                 _this.caseIds = response;
                 _this.addRun(name, description, suiteId);
-            })
-        } else {
-            _this.updateRuns(_this.caseIds)
+            });
         }
-        
-        // if (this.options.includeAllInTestRun === false) {
-        //     this.includeAll = false;
-        //     new Promise(function (resolve, reject) {
-        //         _this.getCases(suiteId, null, [], resolve, reject);
-        //     }).then(function (response) {
-        //         console.log('Creating run with following cases:');
-        //         console.debug(response);
-        //         _this.caseIds = response;
-        //         _this.addRun(name, description, suiteId);
-        //     });
-        // }
-        // else {
-        //     _this.addRun(name, description, suiteId).then(() => {
-        //         _this.getRuns();
-        //     })
-        // }
+        else {
+            this.addRun(name, description, suiteId)
+        }
     };
     TestRail.prototype.addRun = function (name, description, suiteId) {
         console.log("Adding Run...");
@@ -128,55 +129,8 @@ var TestRail = /** @class */ (function () {
             // cache the TestRail Run ID
             TestRailCache.store('runId', _this.runId);
         })
-            .then(function () {
-                _this.getRuns();
-        })
             .catch(function (error) { return console.error(error); });
     };
-    TestRail.prototype.getRuns = function () {
-        console.log("Getting runs...")
-        return axios({
-            method:'get',
-            url: this.base + "/get_runs/" + this.options.projectId,
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-api-ident': 'beta'
-            },
-            auth: {
-                username: this.options.username,
-                password: this.options.password
-            }
-          })
-            .then((res) => {
-                if (res.data.runs.some(run => run["name"].includes(this.executionDateTime))) {
-                    this.runExists = true;
-                }
-            })
-            .catch(function (error) { return console.error("ERROR@@", error); });
-    };
-    TestRail.prototype.updateRuns = function (caseIds) {
-        console.log("updating runs...")
-        this.runId = TestRailCache.retrieve('runId');
-        return axios({
-            method:'post',
-            url: this.base + "/update_run/" + this.runId,
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-api-ident': 'beta'
-            },
-            auth: {
-                username: this.options.username,
-                password: this.options.password
-            },
-            data: JSON.stringify({ 
-                "case_ids": caseIds
-             })
-          })
-            .then((res) => {
-                console.log("update res", res)
-            })
-            .catch(function (error) { return console.error("ERROR@@", error); });
-    }
     TestRail.prototype.deleteRun = function () {
         this.runId = TestRailCache.retrieve('runId');
         axios({
