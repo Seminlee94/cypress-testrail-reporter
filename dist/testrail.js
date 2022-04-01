@@ -161,9 +161,7 @@ var TestRail = /** @class */ (function () {
         });
     };
     TestRail.prototype.publishResult = function (results) {
-        this.runId = 0 ? TestRailCache.retrieve('runId') : results.run_id;
-        console.log("runId!!", this.runId)
-        return axios.post(this.base + "/add_results_for_cases/" + this.runId, {
+        return axios.post(this.base + "/add_results_for_cases/" + results.run_id, {
             results: [{ case_id: results.case_id, status_id: results.status_id, comment: results.comment }],
         }, {
             auth: {

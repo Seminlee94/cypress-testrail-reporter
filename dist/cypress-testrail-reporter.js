@@ -147,6 +147,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
      */
     CypressTestRailReporter.prototype.submitResults = function (status, test, comment) {
         var _this = this;
+        _this.runId = 0 ? TestRailCache.retrieve('runId') : _this.runId;
         console.log("submit results...", _this.runId)
         var caseIds = shared_1.titleToCaseIds(test.title);
         if (caseIds.length) {
