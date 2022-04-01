@@ -157,7 +157,8 @@ export class TestRail {
   }
 
   public publishResult(results: TestRailResult){
-    this.runId = TestRailCache.retrieve('runId');
+    // this.runId = TestRailCache.retrieve('runId');
+    this.runId = results.run_id;
     return axios.post(
       `${this.base}/add_results_for_cases/${this.runId}`,
       {

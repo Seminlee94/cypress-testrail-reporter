@@ -13,9 +13,9 @@ export class CypressTestRailReporter extends reporters.Spec {
   private results: TestRailResult[] = [];
   private testRailApi: TestRail;
   private testRailValidation: TestRailValidation;
-  private runId: number;
   private reporterOptions: any;
   private suiteId: any = [];
+  private runId: number;
   private serverTestCaseIds: any = [];
 
   constructor(runner: any, options: any) {
@@ -141,10 +141,12 @@ export class CypressTestRailReporter extends reporters.Spec {
    * Note: Uploading of screenshot is configurable option
    */
   public submitResults (status, test, comment) {
+    console.log(this.runId)
     let caseIds = titleToCaseIds(test.title)
     if (caseIds.length) {
       caseIds.map(caseId => {
         this.testRailApi.publishResult({
+          run_id: this.runId,
           case_id: caseId,
           status_id: status,
           comment: `Execution time: ${test.duration}ms, case_id: ${caseId}`,

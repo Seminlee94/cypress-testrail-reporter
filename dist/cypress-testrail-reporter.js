@@ -36,6 +36,7 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         _this.suiteId = [];
         _this.serverTestCaseIds = [];
         _this.reporterOptions = options.reporterOptions;
+        _this.runId = 0;
         if (process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME) {
             _this.reporterOptions.username = process.env.CYPRESS_TESTRAIL_REPORTER_USERNAME;
         }
@@ -116,7 +117,6 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                         for (var _runObj of _this.testRailApi.runIds) { 
                             if (_runObj["name"] == name_1) { 
                                 console.log("runId@", _runObj["id"])
-
                                 _this.runId = _runObj["id"]
                                 break;
                             }
@@ -146,11 +146,13 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
      * Note: Uploading of screenshot is configurable option
      */
     CypressTestRailReporter.prototype.submitResults = function (status, test, comment) {
+        console.log(_this.runId)
         var _this = this;
         var caseIds = shared_1.titleToCaseIds(test.title);
         if (caseIds.length) {
             caseIds.map(function (caseId) {
                 _this.testRailApi.publishResult({
+                    run_id: _this.runId,
                     case_id: caseId,
                     status_id: status,
                     comment: "Execution time: " + test.duration + "ms, case_id: " + caseId,

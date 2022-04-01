@@ -161,7 +161,8 @@ var TestRail = /** @class */ (function () {
         });
     };
     TestRail.prototype.publishResult = function (results) {
-        this.runId = TestRailCache.retrieve('runId');
+        // this.runId = TestRailCache.retrieve('runId');
+        this.runId = results.run_id;
         return axios.post(this.base + "/add_results_for_cases/" + this.runId, {
             results: [{ case_id: results.case_id, status_id: results.status_id, comment: results.comment }],
         }, {
