@@ -146,8 +146,8 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
      * Note: Uploading of screenshot is configurable option
      */
     CypressTestRailReporter.prototype.submitResults = function (status, test, comment) {
-        console.log(_this.runId)
         var _this = this;
+        console.log("submit results...", _this.runId)
         var caseIds = shared_1.titleToCaseIds(test.title);
         if (caseIds.length) {
             caseIds.map(function (caseId) {
