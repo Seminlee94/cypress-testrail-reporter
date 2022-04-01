@@ -25,7 +25,7 @@ var TestRail = /** @class */ (function () {
         this.caseIds = [];
         this.runIds = [];
         this.base = options.host + "/index.php?/api/v2";
-        this.runId;
+        this.runId = 0;
     }
     TestRail.prototype.getCases = function (suiteId, nextURL, cases, resolve, reject) {
         var _this = this;
@@ -161,8 +161,8 @@ var TestRail = /** @class */ (function () {
         });
     };
     TestRail.prototype.publishResult = function (results) {
-        // this.runId = TestRailCache.retrieve('runId');
-        this.runId = results.run_id;
+        this.runId = 0 ? TestRailCache.retrieve('runId') : results.run_id;
+        console.log("runId!!", this.runId)
         return axios.post(this.base + "/add_results_for_cases/" + this.runId, {
             results: [{ case_id: results.case_id, status_id: results.status_id, comment: results.comment }],
         }, {

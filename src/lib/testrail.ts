@@ -9,7 +9,7 @@ import { TestRailOptions, TestRailResult } from './testrail.interface';
 
 export class TestRail {
   private base: String;
-  private runId: Number;
+  private runId: Number = 0;
   private includeAll: Boolean = true;
   private caseIds: Number[] = [];
   private retries: number;
@@ -157,8 +157,8 @@ export class TestRail {
   }
 
   public publishResult(results: TestRailResult){
-    // this.runId = TestRailCache.retrieve('runId');
-    this.runId = results.run_id;
+    this.runId = 0 ? TestRailCache.retrieve('runId') : results.run_id;
+    console.log("runId!!", this.runId)
     return axios.post(
       `${this.base}/add_results_for_cases/${this.runId}`,
       {
