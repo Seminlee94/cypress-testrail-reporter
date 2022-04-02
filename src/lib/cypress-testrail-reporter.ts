@@ -141,8 +141,10 @@ export class CypressTestRailReporter extends reporters.Spec {
    * Note: Uploading of screenshot is configurable option
    */
   public submitResults (status, test, comment) {
-    this.runId = 0 ? TestRailCache.retrieve('runId') : this.runId;
-    console.log("submit results...", this.runId)
+    if (this.runId === 0) {
+      this.runId = TestRailCache.retrieve('runId')
+    } 
+    console.log("Submit results...", this.runId)
     let caseIds = titleToCaseIds(test.title)
     if (caseIds.length) {
       caseIds.map(caseId => {
