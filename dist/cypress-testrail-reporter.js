@@ -92,8 +92,6 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                     var executionDateTime = moment().format('dddd, MMMM Do YYYY');
                     var name_1 = (_this.reporterOptions.runName || 'Automated regression test run') + " " + executionDateTime;
                     if (_this.testRailApi.runIds.some(run => run["name"] == name_1) == false) {
-                        console.log("run name_1", name_1);
-                        console.log("@@", _this.testRailApi.runIds.some(run => run["name"] == name_1));
                         TestRailLogger.warn('Starting with following options: ');
                         console.debug(_this.reporterOptions);
                         if (_this.reporterOptions.suiteId) {
@@ -114,15 +112,15 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                         _this.testRailApi.createRun(name_1, description, _this.suiteId);
                     }
                     else {
+                        /* 
+                        look for the run id of run with name that already exists
+                        */
                         for (var _runObj of _this.testRailApi.runIds) { 
                             if (_runObj["name"] == name_1) { 
-                                console.log("runId@", _runObj["id"])
                                 _this.runId = _runObj["id"]
                                 break;
                             }
                         }
-                        // use the cached TestRail Run ID
-                        // _this.runId = TestRailCache.retrieve('runId');
                         TestRailLogger.log("Using existing TestRail Run with ID: '" + _this.runId + "'");
                     }
                 });
@@ -150,7 +148,6 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
         if (_this.runId === 0) {
             _this.runId = TestRailCache.retrieve('runId')
         } 
-        console.log("Submit results...", _this.runId)
         var caseIds = shared_1.titleToCaseIds(test.title);
         if (caseIds.length) {
             caseIds.map(function (caseId) {

@@ -86,8 +86,6 @@ export class CypressTestRailReporter extends reporters.Spec {
           const name = `${this.reporterOptions.runName || 'Automated regression test run'} ${executionDateTime}`;
           // if (!TestRailCache.retrieve('runId')) {
           if (this.testRailApi.runIds.some(run => run["name"] == name) == false) {
-            console.log("run name", name);
-            console.log("@@", this.testRailApi.runIds.some(run => run["name"] == name))
             TestRailLogger.warn('Starting with following options: ')
             console.debug(this.reporterOptions)
               if (this.reporterOptions.suiteId) {
@@ -106,20 +104,19 @@ export class CypressTestRailReporter extends reporters.Spec {
               this.testRailApi.createRun(name, description, this.suiteId);
           } 
           else {
+            /* 
+            look for the run id of run with name that already exists
+            */
             for (var runObj of this.testRailApi.runIds) {
               if (runObj["name"] == name) {
-                console.log("runId@", runObj["id"])
                 this.runId = runObj["id"]
                 break;
               }
             }
-              // use the cached TestRail Run ID
-              // this.runId = TestRailCache.retrieve('runId');
             TestRailLogger.log(`Using existing TestRail Run with ID: '${this.runId}'`);
           }
         })
       });
-
       runner.on('pass', test => {
         this.submitResults(Status.Passed, test, `Execution time: ${test.duration}ms`);
       });
@@ -131,6 +128,7 @@ export class CypressTestRailReporter extends reporters.Spec {
       runner.on('retry', test => {
         this.submitResults(Status.Retest, test, 'Cypress retry logic has been triggered!');
       });
+
     }
   }
 
@@ -144,7 +142,6 @@ export class CypressTestRailReporter extends reporters.Spec {
     if (this.runId === 0) {
       this.runId = TestRailCache.retrieve('runId')
     } 
-    console.log("Submit results...", this.runId)
     let caseIds = titleToCaseIds(test.title)
     if (caseIds.length) {
       caseIds.map(caseId => {
