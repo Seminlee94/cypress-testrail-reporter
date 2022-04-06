@@ -101,6 +101,7 @@ export class TestRail {
     
   public addRun(name: string, description: string, suiteId: number) {
     console.log("Adding Run...");
+    console.log("DESCRIPTION!@#@",description);
     return axios({
       method: 'post',
       url: `${this.base}/add_run/${this.options.projectId}`,
@@ -118,6 +119,7 @@ export class TestRail {
       }),
     })
     .then(response => {
+        console.log("RESPONSE!@#", response)
         this.runId = response.data.id;
         // cache the TestRail Run ID
         TestRailCache.store('runId', this.runId);
