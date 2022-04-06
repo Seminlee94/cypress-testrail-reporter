@@ -82,8 +82,9 @@ export class CypressTestRailReporter extends reporters.Spec {
         * which case that will be used and no new one created.
         */
         this.testRailApi.getRuns().then((res) => {
-          const executionDateTime = moment().format('dddd, MMMM Do YYYY');
-          const name = `${this.reporterOptions.runName || 'Automated regression test run'} ${executionDateTime}`;
+          const executionDateTime = moment().format('llll');
+          // const executionDateTime = moment().format('dddd, MMMM Do YYYY');
+          const name = `${this.reporterOptions.runName || 'Automated regression test run for'} ${executionDateTime}`;
           // if (!TestRailCache.retrieve('runId')) {
           if (this.testRailApi.runIds.some(run => run["name"] == name) == false) {
             TestRailLogger.warn('Starting with following options: ')

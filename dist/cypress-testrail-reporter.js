@@ -89,8 +89,9 @@ var CypressTestRailReporter = /** @class */ (function (_super) {
                 * which case that will be used and no new one created.
                 */
                 _this.testRailApi.getRuns().then(function () {
-                    var executionDateTime = moment().format('dddd, MMMM Do YYYY');
-                    var name_1 = (_this.reporterOptions.runName || 'Automated regression test run') + " " + executionDateTime;
+                    var executionDateTime = moment().format('llll');
+                    // var executionDateTime = moment().format('dddd, MMMM Do YYYY');
+                    var name_1 = (_this.reporterOptions.runName || 'Automated regression test run for') + " " + executionDateTime;
                     if (_this.testRailApi.runIds.some(run => run["name"] == name_1) == false) {
                         TestRailLogger.warn('Starting with following options: ');
                         console.debug(_this.reporterOptions);
