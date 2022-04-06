@@ -107,7 +107,6 @@ var TestRail = /** @class */ (function () {
     };
     TestRail.prototype.addRun = function (name, description, suiteId) {
         console.log("Adding Run...");
-        console.log("DESCRIPTION!@#@",description);
         var _this = this;
         return axios({
             method: 'post',
@@ -126,7 +125,6 @@ var TestRail = /** @class */ (function () {
             }),
         })
             .then(function (response) {
-            console.log("RESPONSE!@#", response)
             _this.runId = response.data.id;
             // cache the TestRail Run ID
             TestRailCache.store('runId', _this.runId);
