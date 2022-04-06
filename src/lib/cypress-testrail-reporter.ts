@@ -97,6 +97,7 @@ export class CypressTestRailReporter extends reporters.Spec {
               } else {
                 if (process.env.CYPRESS_CI_JOB_URL) {
                   var description = process.env.CYPRESS_CI_JOB_URL;
+                  console.log("DESCRIPTION!@#",description)
                 } else {
                   var description = 'For the Cypress run visit https://dashboard.cypress.io/#/projects/runs';
                 }
